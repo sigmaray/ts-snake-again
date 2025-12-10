@@ -73,6 +73,10 @@ addElements();
 const elDebug = document.getElementById('debug');
 const elCanvas = document.getElementsByTagName('canvas')[0];
 const canvasContext = elCanvas.getContext('2d');
+const elButtonLeft = document.getElementById('buttonLeft');
+const elButtonRight = document.getElementById('buttonRight');
+const elButtonUp = document.getElementById('buttonUp');
+const elButtonDown = document.getElementById('buttonDown');
 let state = {
     x: 0,
     y: 0,
@@ -82,13 +86,9 @@ let state = {
 generateNewFoodPosition(state);
 debugPrintJson(elDebug, state);
 renderState(canvasContext, state);
-document.addEventListener('keydown', function (event) {
-    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
-        return;
-    }
-    event.preventDefault();
+const handleEvent = function (direction) {
     let head = state.snakeSegement[0];
-    if (event.key == 'ArrowLeft') {
+    if (direction == 'ArrowLeft') {
         if (head.x > 0) {
             head.x--;
         }
@@ -96,7 +96,7 @@ document.addEventListener('keydown', function (event) {
             head.x = BOARD_SIZE_X - 1;
         }
     }
-    else if (event.key == 'ArrowRight') {
+    else if (direction == 'ArrowRight') {
         if (head.x < BOARD_SIZE_X - 1) {
             head.x++;
         }
@@ -104,7 +104,7 @@ document.addEventListener('keydown', function (event) {
             head.x = 0;
         }
     }
-    else if (event.key == 'ArrowUp') {
+    else if (direction == 'ArrowUp') {
         if (head.y > 0) {
             head.y--;
         }
@@ -112,7 +112,7 @@ document.addEventListener('keydown', function (event) {
             head.y = BOARD_SIZE_X - 1;
         }
     }
-    else if (event.key == 'ArrowDown') {
+    else if (direction == 'ArrowDown') {
         if (head.y < BOARD_SIZE_X - 1) {
             head.y++;
         }
@@ -125,5 +125,16 @@ document.addEventListener('keydown', function (event) {
     }
     debugPrintJson(elDebug, state);
     renderState(canvasContext, state);
+};
+document.addEventListener('keydown', function (event) {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+        return;
+    }
+    event.preventDefault();
+    handleEvent(event.key);
 });
+elButtonLeft.addEventListener("click", function () { handleEvent('ArrowLeft'); });
+elButtonRight.addEventListener("click", function () { handleEvent('ArrowRight'); });
+elButtonUp.addEventListener("click", function () { handleEvent('ArrowUp'); });
+elButtonDown.addEventListener("click", function () { handleEvent('ArrowDown'); });
 //# sourceMappingURL=main.js.map

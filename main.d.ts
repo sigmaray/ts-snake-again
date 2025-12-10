@@ -26,5 +26,10 @@ declare const generateNewFoodPosition: (state: State) => Coordinate;
 declare const elDebug: HTMLElement;
 declare const elCanvas: HTMLCanvasElement;
 declare const canvasContext: CanvasRenderingContext2D;
+declare const elButtonLeft: HTMLButtonElement;
+declare const elButtonRight: HTMLButtonElement;
+declare const elButtonUp: HTMLButtonElement;
+declare const elButtonDown: HTMLButtonElement;
 declare let state: State;
+declare const handleEvent: (direction: string) => void;
 //# sourceMappingURL=main.d.ts.map
