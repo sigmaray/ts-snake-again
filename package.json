@@ -2,16 +2,20 @@
   "name": "ts-snake-again",
   "version": "1.0.0",
   "description": "",
+  "homepage": "https://sigmaray.github.io/ts-snake-again",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "watch": "tsc -w"
+    "build_": "tsc",
+    "build": "rm -rf dist/* && tsc && cp -r public/* dist/ || true",
+    "watch": "tsc -w",
+    "deploy": "gh-pages -d dist"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "gh-pages": "^6.3.0",
     "typescript": "^5.9.3"
   }
 }
