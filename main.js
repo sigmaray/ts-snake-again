@@ -4,7 +4,6 @@ const BOARD_SIZE_Y = 10;
 const CELL_SIZE_PX = 20;
 const BORDER_SIZE_PX = 1;
 const DEBUG_OUTPUT = true;
-// -------------------------------
 Array.prototype.random = function () {
     return this[Math.floor((Math.random() * this.length))];
 };

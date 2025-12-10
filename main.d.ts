@@ -15,11 +15,14 @@ type Coordinate = {
 };
 type SnakeSegment = Coordinate;
 type Food = Coordinate;
+interface Array<T> {
+    random(): T;
+}
 declare const addElements: () => void;
 declare const debugPrintJson: (elDebug: HTMLElement, o: Object) => void;
 declare const renderState: (context: any, state: State) => void;
 declare const isSnakeOverlappingWithFood: (state: State) => boolean;
-declare const generateNewFoodPosition: (state: State) => any;
+declare const generateNewFoodPosition: (state: State) => Coordinate;
 declare const elDebug: HTMLElement;
 declare const elCanvas: HTMLCanvasElement;
 declare const canvasContext: CanvasRenderingContext2D;
