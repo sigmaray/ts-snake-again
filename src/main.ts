@@ -13,15 +13,14 @@ type State = {
     food: Food
 };
 
-type SnakeSegment = {
+type Coordinate = {
     x: number,
     y: number
 }
 
-type Food = {
-    x: number,
-    y: number
-}
+type SnakeSegment = Coordinate
+
+type Food = Coordinate
 
 // -------------------------------
 
@@ -91,10 +90,9 @@ const generateNewFoodPosition = function (state: State) {
     }
 
     const findEmptyCells = function (state: any) {
-        const emptyCells = [];
+        const emptyCells: Array<Coordinate> = [];
         const applied = applyStateToMatrix(state);
         applied.forEach((row, y) => {
-            // console.log(element)
             row.forEach((cell, x) => {
                 if (!cell) {
                     emptyCells.push({
@@ -106,7 +104,7 @@ const generateNewFoodPosition = function (state: State) {
         });
         return emptyCells;
     }
-    const randomCell =  findEmptyCells(state).random();
+    const randomCell = findEmptyCells(state).random();
     return randomCell;
 }
 
