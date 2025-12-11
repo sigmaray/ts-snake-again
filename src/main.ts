@@ -9,7 +9,7 @@ const DEBUG_OUTPUT = false;
 type State = {
     x: number,
     y: number,
-    snakeSegement: SnakeSegment[],
+    snakeSegements: SnakeSegment[],
     food: Food
 };
 
@@ -119,7 +119,7 @@ const addElements = function () {
                 <td></td>
             </tr>
         </table>
-        `;     
+        `;
     }
 
     // alert('l70');
@@ -139,7 +139,7 @@ const debugPrintJson = function (elDebug: HTMLElement, o: Object) {
 const renderState = function (context: any, state: State) {
     context.clearRect(0, 0, CELL_SIZE_PX * BOARD_SIZE_X, CELL_SIZE_PX * BOARD_SIZE_Y);
 
-    let head = state.snakeSegement[0] as SnakeSegment;
+    let head = state.snakeSegements[0] as SnakeSegment;
 
     context.fillStyle = '#E8E8E8';
     context.fillRect(head.x * CELL_SIZE_PX + BORDER_SIZE_PX, head.y * CELL_SIZE_PX + BORDER_SIZE_PX, CELL_SIZE_PX - BORDER_SIZE_PX, CELL_SIZE_PX - BORDER_SIZE_PX);
@@ -149,7 +149,7 @@ const renderState = function (context: any, state: State) {
 }
 
 const isSnakeOverlappingWithFood = function (state: State): boolean {
-    let head = state.snakeSegement[0] as SnakeSegment;
+    let head = state.snakeSegements[0] as SnakeSegment;
     let food = state.food;
     return head.x == food.x && head.y == food.y;
 }
@@ -160,7 +160,7 @@ const generateNewFoodPosition = function (state: State) {
             Array.from({ length: BOARD_SIZE_X }, () => '')
         ));
 
-        let head = state.snakeSegement[0] as SnakeSegment;
+        let head = state.snakeSegements[0] as SnakeSegment;
         let food = state.food;
 
         matrix[head.y]![head.x] = 'h';
@@ -204,11 +204,50 @@ const elButtonRight = document.getElementById('buttonRight') as HTMLButtonElemen
 const elButtonUp = document.getElementById('buttonUp') as HTMLButtonElement;
 const elButtonDown = document.getElementById('buttonDown') as HTMLButtonElement;
 
+
 let state: State = {
     x: 0,
     y: 0,
-    snakeSegement: [{ x: 0, y: 0 }],
+    snakeSegements: [{ x: 0, y: 0 }],
     food: { x: 1, y: 1 }
+}
+
+/**
+ * Загружает состояние из localStorage или возвращает fallback при отсутствии/ошибке.
+ * @param {string} key - ключ в localStorage, например "state"
+ * @param {any} fallback - альтернативные данные, возвращаемые при ошибке
+ * @returns {any} - распарсенный объект или fallback
+ */
+function loadStateFromLocalStorage(key = 'state', fallback = {}) {
+    const raw = localStorage.getItem(key);
+    if (raw === null) {
+        // Ключ отсутствует
+        return fallback;
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+        return parsed;
+    } catch (err) {
+        // Ошибка парсинга — можно логировать и вернуть fallback
+        console.warn(`Failed to parse localStorage["${key}"]`, err);
+        return fallback;
+    }
+}
+
+function putToLocalStorate(state: State, key='state') {
+    localStorage.setItem(key,
+        JSON.stringify(state)
+    )
+}
+
+
+// Пример использования
+const loaded = loadStateFromLocalStorage();
+
+state = {
+    ...state,
+    ...loaded
 }
 
 generateNewFoodPosition(state);
@@ -216,8 +255,8 @@ generateNewFoodPosition(state);
 debugPrintJson(elDebug, state);
 renderState(canvasContext, state);
 
-const handleEvent = function(direction: string) {
-    let head = state.snakeSegement[0] as SnakeSegment;
+const handleEvent = function (direction: string) {
+    let head = state.snakeSegements[0] as SnakeSegment;
 
     if (direction == 'ArrowLeft') {
         if (head.x > 0) {
@@ -251,6 +290,8 @@ const handleEvent = function(direction: string) {
 
     debugPrintJson(elDebug, state);
 
+    putToLocalStorate(state);
+
     renderState(canvasContext, state);
 }
 
@@ -261,12 +302,12 @@ document.addEventListener('keydown', function (event) {
 
     event.preventDefault();
 
-    handleEvent(event.key);    
+    handleEvent(event.key);
 });
 
 if (isMobileUserAgent()) {
-    elButtonLeft.addEventListener("click", function() { handleEvent('ArrowLeft') });
-    elButtonRight.addEventListener("click", function() { handleEvent('ArrowRight') });
-    elButtonUp.addEventListener("click", function() { handleEvent('ArrowUp') });
-    elButtonDown.addEventListener("click", function() { handleEvent('ArrowDown') });
+    elButtonLeft.addEventListener("click", function () { handleEvent('ArrowLeft') });
+    elButtonRight.addEventListener("click", function () { handleEvent('ArrowRight') });
+    elButtonUp.addEventListener("click", function () { handleEvent('ArrowUp') });
+    elButtonDown.addEventListener("click", function () { handleEvent('ArrowDown') });
 }
