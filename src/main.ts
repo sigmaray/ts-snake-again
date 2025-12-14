@@ -1,6 +1,6 @@
-const BOARD_SIZE_X = 10;
-const BOARD_SIZE_Y = 10;
-const CELL_SIZE_PX = 30;
+const BOARD_SIZE_X = 3;
+const BOARD_SIZE_Y = 3;
+const CELL_SIZE_PX = 50;
 const BORDER_SIZE_PX = 1;
 const DEBUG_OUTPUT = false;
 
@@ -10,7 +10,8 @@ type State = {
     x: number,
     y: number,
     snakeSegements: SnakeSegment[],
-    food: Food
+    food: Food,
+    isGameOver: boolean
 };
 
 type Coordinate = {
@@ -36,7 +37,7 @@ Array.prototype.random = function () {
 // -------------------------------
 
 function isMobileUserAgent() {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const userAgent = navigator.userAgent || navigator.vendor;
     return /Android|iPhone|iPad|iPod|BlackBerry|webOS|Windows Phone/i.test(userAgent);
 }
 
@@ -63,26 +64,166 @@ const addElements = function () {
         `;
     }
 
+    // document.head.innerHTML += `
+    //     <style>
+    //     /* p, pre {
+    //         max-width: 100vw;
+    //         overflow: hidden;
+    //     } */
+
+    //     button {
+    //         width: 5rem;
+    //         height: 5rem;
+    //     }
+
+    //     table {
+    //         margin-top: 5rem;
+    //         width: 100%;
+    //     }
+    //     </style>
+    // `;
+
     document.head.innerHTML += `        
         <style>
-        /* p, pre {
-            max-width: 100vw;
-            overflow: hidden;
-        } */
+            /* Сброс стилей для кроссбраузерности */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-        button {
-            width: 5rem;
-            height: 5rem;
-        }
+            /* Основные стили для body */
+            body {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                font-family: system-ui, -apple-system, sans-serif;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
 
-        table {
-            margin-top: 5rem;
-            width: 100%;
-        }
+            /* Контейнер для верхней части */
+            .top-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                padding-top: 20px;
+            }
+
+            /* Стили для canvas */
+            .game-canvas {
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                background-color: white;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Стили для статуса игры */
+            #gameStatus {
+                font-size: 1.2rem;
+                font-weight: 500;
+                color: #333;
+                text-align: center;
+                min-height: 1.5em;
+            }
+
+            /* Контейнер для кнопок управления */
+            .controls {
+                display: grid;
+                grid-template-areas:
+                    ". up ."
+                    "left center right"
+                    ". down .";
+                gap: 10px;
+                padding: 20px;
+                background-color: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                margin-bottom: 20px;
+            }
+
+            /* Стили для кнопок */
+            .control-button {
+                width: 70px;
+                height: 70px;
+                border: none;
+                border-radius: 50%;
+                background-color: #4f46e5;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                user-select: none;
+            }
+
+            .control-button:hover {
+                background-color: #4338ca;
+                transform: scale(1.05);
+            }
+
+            .control-button:active {
+                transform: scale(0.95);
+            }
+
+            /* Размещение кнопок по grid-areas */
+            #buttonUp { grid-area: up; }
+            #buttonLeft { grid-area: left; }
+            #buttonRight { grid-area: right; }
+            #buttonDown { grid-area: down; }
+            #buttonRestart { grid-area: center; }
+
+            /* Адаптивность для мобильных устройств */
+            @media (max-width: 480px) {
+                .control-button {
+                    width: 60px;
+                    height: 60px;
+                    font-size: 1.3rem;
+                }
+                
+                .controls {
+                    gap: 8px;
+                    padding: 15px;
+                }
+                
+                body {
+                    padding: 10px;
+                }
+            }
+
+            /* Для очень маленьких экранов */
+            @media (max-width: 320px) {
+                .control-button {
+                    width: 50px;
+                    height: 50px;
+                    font-size: 1.1rem;
+                }
+                
+                .game-canvas {
+                    width: 200px;
+                    height: 200px;
+                }
+            }
+
+            /* Улучшение доступности */
+            .control-button:focus-visible {
+                outline: 3px solid #3b82f6;
+                outline-offset: 2px;
+            }
+
+            /* Плавные переходы для всего интерфейса */
+            .top-section, .controls {
+                transition: all 0.3s ease;
+            }
         </style>
     `;
 
-    // alert('l50');
+    /*
     document.body.innerHTML += `
         <center>
             <canvas
@@ -90,11 +231,28 @@ const addElements = function () {
                 width="${String(BOARD_SIZE_X * CELL_SIZE_PX)}"
                 height="${String(BOARD_SIZE_Y * CELL_SIZE_PX)}"
             ></canvas>
-        </center>
-        <p id="gameStatus"></p>        
+            <p id="gameStatus"></p>        
+        </center>        
+    `;
+    */
+
+    document.body.innerHTML += `        
+         <!-- Верхняя часть с canvas и статусом -->
+        <section class="top-section" aria-label="Игровое поле">
+
+            <canvas
+                class="game-canvas" 
+                width="${String(BOARD_SIZE_X * CELL_SIZE_PX)}"
+                height="${String(BOARD_SIZE_Y * CELL_SIZE_PX)}"
+            ></canvas>
+            <p id="gameStatus" role="status" aria-live="polite">
+                <!-- Статус игры будет обновляться JavaScript -->
+            </p>
+        </section>
     `;
 
     if (isMobileUserAgent()) {
+        /*
         document.body.innerHTML += `
         <table border="1">
             <tr>
@@ -119,15 +277,50 @@ const addElements = function () {
                 <td></td>
             </tr>
         </table>
+              `;
+              */
+
+        document.body.innerHTML += `
+        <!-- Нижняя часть с кнопками управления -->
+        <section class="controls" aria-label="Управление">
+            <button 
+                id="buttonUp" 
+                class="control-button"
+                aria-label="Движение вверх"
+            >↑</button>
+            
+            <button 
+                id="buttonLeft" 
+                class="control-button"
+                aria-label="Движение влево"
+            >←</button>
+
+            <button
+                id="buttonRestart"
+                class="control-button center-button"
+                aria-label="Перезапуск"
+            >⟳</button>
+            
+            <button 
+                id="buttonDown" 
+                class="control-button"
+                aria-label="Движение вниз"
+            >↓</button>
+            
+            <button 
+                id="buttonRight" 
+                class="control-button"
+                aria-label="Движение вправо"
+            >→</button>
+        </section>
         `;
     }
 
-    // alert('l70');
-
-
-    const elDebug = document.createElement('pre');
-    elDebug.setAttribute('id', 'debug');
-    document.body.appendChild(elDebug);
+    if (DEBUG_OUTPUT) {
+        const elDebug = document.createElement('pre');
+        elDebug.setAttribute('id', 'debug');
+        document.body.appendChild(elDebug);
+    }
 }
 
 const debugPrintJson = function (elDebug: HTMLElement, o: Object) {
@@ -139,9 +332,15 @@ const debugPrintJson = function (elDebug: HTMLElement, o: Object) {
 const renderState = function (context: any, state: State) {
     context.clearRect(0, 0, CELL_SIZE_PX * BOARD_SIZE_X, CELL_SIZE_PX * BOARD_SIZE_Y);
 
-    let head = state.snakeSegements[0] as SnakeSegment;
+    // let head = state.snakeSegements[0] as SnakeSegment;
 
-    context.fillStyle = '#E8E8E8';
+    state.snakeSegements.forEach(function (head, i) {
+        context.fillStyle = '#E8E8E8';
+        context.fillRect(head.x * CELL_SIZE_PX + BORDER_SIZE_PX, head.y * CELL_SIZE_PX + BORDER_SIZE_PX, CELL_SIZE_PX - BORDER_SIZE_PX, CELL_SIZE_PX - BORDER_SIZE_PX);
+    });
+
+    const head = state.snakeSegements[0]!;
+    context.fillStyle = 'green';
     context.fillRect(head.x * CELL_SIZE_PX + BORDER_SIZE_PX, head.y * CELL_SIZE_PX + BORDER_SIZE_PX, CELL_SIZE_PX - BORDER_SIZE_PX, CELL_SIZE_PX - BORDER_SIZE_PX);
 
     context.fillStyle = 'red';
@@ -154,39 +353,49 @@ const isSnakeOverlappingWithFood = function (state: State): boolean {
     return head.x == food.x && head.y == food.y;
 }
 
-const generateNewFoodPosition = function (state: State) {
-    const applyStateToMatrix = function (state: State) {
-        const matrix = Array.from({ length: BOARD_SIZE_Y }, () => (
-            Array.from({ length: BOARD_SIZE_X }, () => '')
-        ));
+const applyStateToMatrix = function (state: State) {
+    const matrix = Array.from({ length: BOARD_SIZE_Y }, () => (
+        Array.from({ length: BOARD_SIZE_X }, () => '')
+    ));
 
-        let head = state.snakeSegements[0] as SnakeSegment;
-        let food = state.food;
+    let head = state.snakeSegements[0] as SnakeSegment;
+    let food = state.food;
 
-        matrix[head.y]![head.x] = 'h';
+    // matrix[head.y]![head.x] = 'h';
 
-        matrix[food.y]![food.x] = 'f';
+    matrix[food.y]![food.x] = 'f';
 
-        // console.log({matrix});
+    state.snakeSegements.forEach(function (head, i) {
+        matrix[head.y]![head.x] = 's';
+    });
 
-        return matrix;
-    }
+    // console.log({matrix});
 
-    const findEmptyCells = function (state: any) {
-        const emptyCells: Array<Coordinate> = [];
-        const applied = applyStateToMatrix(state);
-        applied.forEach((row, y) => {
-            row.forEach((cell, x) => {
-                if (!cell) {
-                    emptyCells.push({
-                        x,
-                        y
-                    });
-                }
-            });
+    return matrix;
+}
+
+const findEmptyCells = function (state: any) {
+    const emptyCells: Array<Coordinate> = [];
+    const applied = applyStateToMatrix(state);
+    applied.forEach((row, y) => {
+        row.forEach((cell, x) => {
+            if (!cell) {
+                emptyCells.push({
+                    x,
+                    y
+                });
+            }
         });
-        return emptyCells;
-    }
+    });
+    return emptyCells;
+}
+
+const canGenerateFood = function (state: State) {
+    const emptyCells = findEmptyCells(state);
+    return emptyCells.length > 0;
+}
+
+const generateNewFoodPosition = function (state: State) {
     const randomCell = findEmptyCells(state).random();
     return randomCell;
 }
@@ -196,6 +405,7 @@ const generateNewFoodPosition = function (state: State) {
 addElements();
 
 const elDebug = document.getElementById('debug') as HTMLElement;
+const elGameStatus = document.getElementById('gameStatus') as HTMLElement;
 const elCanvas = document.getElementsByTagName('canvas')[0] as HTMLCanvasElement;
 const canvasContext = elCanvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -203,13 +413,14 @@ const elButtonLeft = document.getElementById('buttonLeft') as HTMLButtonElement;
 const elButtonRight = document.getElementById('buttonRight') as HTMLButtonElement;
 const elButtonUp = document.getElementById('buttonUp') as HTMLButtonElement;
 const elButtonDown = document.getElementById('buttonDown') as HTMLButtonElement;
-
+const elButtonRestart = document.getElementById('buttonRestart') as HTMLButtonElement;
 
 let state: State = {
     x: 0,
     y: 0,
     snakeSegements: [{ x: 0, y: 0 }],
-    food: { x: 1, y: 1 }
+    food: { x: 1, y: 1 },
+    isGameOver: false
 }
 
 /**
@@ -235,7 +446,7 @@ function loadStateFromLocalStorage(key = 'state', fallback = {}) {
     }
 }
 
-function putToLocalStorate(state: State, key='state') {
+function putToLocalStorate(state: State, key = 'state') {
     localStorage.setItem(key,
         JSON.stringify(state)
     )
@@ -247,7 +458,7 @@ const loaded = loadStateFromLocalStorage();
 
 state = {
     ...state,
-    ...loaded
+    // ...loaded
 }
 
 generateNewFoodPosition(state);
@@ -255,8 +466,14 @@ generateNewFoodPosition(state);
 debugPrintJson(elDebug, state);
 renderState(canvasContext, state);
 
+const deepCopy = function (obj: any) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 const handleEvent = function (direction: string) {
-    let head = state.snakeSegements[0] as SnakeSegment;
+    if (state.isGameOver) return;
+
+    let head = deepCopy(state.snakeSegements[0]) as SnakeSegment;
 
     if (direction == 'ArrowLeft') {
         if (head.x > 0) {
@@ -284,8 +501,18 @@ const handleEvent = function (direction: string) {
         }
     }
 
+    state.snakeSegements.unshift(head);
+
     if (isSnakeOverlappingWithFood(state)) {
+        if (!canGenerateFood(state)) {
+            state.isGameOver = true;
+            elGameStatus.innerText = 'game is over'
+            return;
+        }
+
         state.food = generateNewFoodPosition(state);
+    } else {
+        state.snakeSegements.pop();
     }
 
     debugPrintJson(elDebug, state);
@@ -309,5 +536,8 @@ if (isMobileUserAgent()) {
     elButtonLeft.addEventListener("click", function () { handleEvent('ArrowLeft') });
     elButtonRight.addEventListener("click", function () { handleEvent('ArrowRight') });
     elButtonUp.addEventListener("click", function () { handleEvent('ArrowUp') });
-    elButtonDown.addEventListener("click", function () { handleEvent('ArrowDown') });
+    elButtonDown.addEventListener("click", function () { handleEvent('ArrowDown') });    
+    elButtonRestart.addEventListener("click", function () {
+        alert('restart button pressed');
+    });    
 }
