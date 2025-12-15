@@ -79,7 +79,7 @@ const addElements = function () {
             /* Стили для canvas */
             .game-canvas {
                 border: 1px solid #ccc;
-                border-radius: 8px;
+                border-radius: 8px;                
                 background-color: white;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
@@ -100,12 +100,13 @@ const addElements = function () {
                     ". up ."
                     "left center right"
                     ". down .";
-                gap: 10px;
-                padding: 20px;
+                /* gap: 10px; */
+                gap: 30px;
+                /* padding: 20px; */
                 background-color: white;
                 border-radius: 12px;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                margin-bottom: 20px;
+                /* margin-bottom: 20px; */
             }
 
             /* Стили для кнопок */
@@ -151,6 +152,7 @@ const addElements = function () {
                 
                 .controls {
                     gap: 8px;
+                    gap: 30px;
                     padding: 15px;
                 }
                 
